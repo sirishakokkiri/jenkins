@@ -35,12 +35,6 @@ pipeline{
               sh 'echo "In Test Step"'
            }
         }
-
-        stage('Deploy') {
-            steps {
-              sh 'echo "Value of ENV Variable is "$MY_ENV_VAR"'
-           }
-       }
     }   
 
     post {
