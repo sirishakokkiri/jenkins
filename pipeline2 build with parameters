@@ -1,0 +1,41 @@
+pipeline {
+    agent any
+
+    parameters {
+        string(name: 'RELEASE', defaultValue: 'false', description: 'Is this a Release Candidate')
+    }
+    
+    environment {
+        RELEASE= '1.1.0'
+        INT_VERSION= 'S2'
+    }
+
+    stages {
+        stage('Audit tools') {
+            steps {
+                sh '''
+                git --version
+                java --version
+                maven --version
+                '''
+            }
+       }
+
+       stage('Build') {
+           steps {
+              dir('demo/pom.xml') {
+                 sh '''
+                 mvn clean package
+                 '''
+                }
+            }
+        }
+
+        stage('Publish') {
+            when {
+                expression { return params.RELEASE }
+            }
+            
+        }
+    }   
+}
