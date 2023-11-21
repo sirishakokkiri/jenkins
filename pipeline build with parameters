@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+
+    environment {
+        NAME= 'siri'
+    }
+
+    stage('verification') {
+        input {
+            meassage 'Are you siri'
+            ok 'DO it'
+            parameters {
+                string(name: 'VERIFY', defaultValue: 'admin', description: 'working on admin credentials')
+            }
+        }
+        steps {
+            echo "Verifying the admin autentication for ${NAME}"
+        }
+    }
+
+    post {
+        always {
+            echo "login successful"
+        }
+    }
+}
