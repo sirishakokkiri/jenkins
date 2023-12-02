@@ -12,7 +12,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Checkout the source code from your version control system
-                checkout scm
+                checkout 
             }
         }
 
@@ -58,14 +58,6 @@ pipeline {
             }
         }
 
-        stage('Pull Docker Image') {
-            steps {
-                script {
-                    docker.image('repository/my_image_name:latest').pull()
-                }
-            }
-        }
-
         stage('Deploy') {
             environment {
                 KUBECONFIG = credentials('kubeconfig-credential-id')
@@ -81,13 +73,11 @@ pipeline {
             // Additional actions to perform on successful deployment
             echo 'Deployment successful!'
 
-            // For example, you might want to trigger a notification or update a status
         }
         failure {
             // Additional actions to perform on deployment failure
             echo 'Deployment failed!'
-
-            // For example, you might want to send an alert or rollback the deployment
+            
         }
     }
 }
