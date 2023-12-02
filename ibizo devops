@@ -1,0 +1,93 @@
+pipeline {
+    agent any
+    
+    environment {
+        // Define environment variables
+        KUBE_NAMESPACE = 'your-namespace'
+        KUBE_DEPLOYMENT_NAME = 'your-deployment'
+        KUBE_CONTAINER_NAME = 'your-container'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the source code from your version control system
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                // Build your application (e.g., Maven, Gradle, Docker)
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                // Run your unit tests
+                sh 'echo "In Unit Test Step"'
+            }
+        }
+
+        stage('Integration Test') {
+            steps {
+                // Run your integration tests
+                sh 'echo "In integration Test Step"'
+            }
+        }
+ 
+        stage('Build Image') {
+            steps {
+                script {
+                    // Copy the artifact to the workspace
+                    sh 'cp /path/to/artifact.jar $WORKSPACE'
+                    
+                    // Docker build and tag the image
+                    sh 'docker build -t my_image_name:latest .'
+                }
+            }
+        }
+
+        stage('Push Image') {
+            steps {
+                script {
+                    // push the built image to a registry
+                    sh 'docker push my_image_name:latest'
+                }
+            }
+        }
+
+        stage('Pull Docker Image') {
+            steps {
+                script {
+                    docker.image('repository/my_image_name:latest').pull()
+                }
+            }
+        }
+
+        stage('Deploy') {
+            environment {
+                KUBECONFIG = credentials('kubeconfig-credential-id')
+            }
+            steps {
+                // kubectl to apply the deployment YAML to your Kubernetes cluster
+                sh 'kubectl apply -f deployment.yaml -n $KUBE_NAMESPACE'
+            }
+        }
+
+    post {
+        success {
+            // Additional actions to perform on successful deployment
+            echo 'Deployment successful!'
+
+            // For example, you might want to trigger a notification or update a status
+        }
+        failure {
+            // Additional actions to perform on deployment failure
+            echo 'Deployment failed!'
+
+            // For example, you might want to send an alert or rollback the deployment
+        }
+    }
+}
