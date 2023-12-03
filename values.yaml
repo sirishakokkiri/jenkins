@@ -26,4 +26,13 @@ vault:
   path: secret/My-app
   key: a1b2c33d4e5f6g7h8i9jakblc
 
+logging:
+  splunk:
+    enabled: true
+    host: splunk-indexer-host
+    port: 9997
+    token: My-app-splunk-token
+    index: My-app-splunk-index
+    sourcetype: My-app-splunk-sourcetype
+
 

@@ -60,10 +60,13 @@ pipeline {
                 script {
                     // Assuming Helm is installed on Jenkins agent
                     sh "helm upgrade --install $APP_NAME $HELM_CHART_PATH --namespace $K8S_NAMESPACE -f values.yaml"
+
+                    //  kubectl to apply the deployment YAML to your Kubernetes cluster
+                    sh 'kubectl apply -f deployment.yaml -n $KUBE_NAMESPACE'
                 }
             }
         }
-        
+
     post {
         success {
             // actions to perform on successful deployment

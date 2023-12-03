@@ -59,3 +59,116 @@ spec:
             name: My-app
             port:
               number: 80
+
+# prometheus.yaml
+
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: My-org-prometheus
+spec:
+  replicas: 1
+  serviceMonitorSelector:
+    matchLabels:
+      app: My-app
+  ruleSelector:
+    matchLabels:
+      prometheus: My-org-prometheus
+  alerting:
+    alertmanagers:
+    - namespace: default
+      name: My-app-alertmanager
+      port: web
+---
+# grafana.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: My-org-grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-org-grafana
+  template:
+    metadata:
+      labels:
+        app: My-org-grafana
+    spec:
+      containers:
+      - name: my-org-grafana
+        image: grafana/grafana:latest
+        ports:
+        - containerPort: 3000
+---
+# grafana-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-org-grafana
+spec:
+  selector:
+    app: my-org-grafana
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP  # Change to LoadBalancer or NodePort as needed
+---
+# splunk-configmap.yaml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: splunk-config
+data:
+  outputs.conf: |-
+    [tcpout]
+    defaultGroup = splunk-indexer
+    indexAndForward = true
+    
+    [tcpout:splunk-indexer]
+    server = splunk-indexer-host:9997
+---
+# splunk-daemonset.yaml
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: splunk-forwarder
+spec:
+  selector:
+    matchLabels:
+      app: splunk-forwarder
+  template:
+    metadata:
+      labels:
+        app: splunk-forwarder
+    spec:
+      containers:
+      - name: splunk-forwarder
+        image: splunk/universalforwarder:latest
+        volumeMounts:
+        - name: splunk-config
+          mountPath: /opt/splunkforwarder/etc/system/local
+      volumes:
+      - name: splunk-config
+        configMap:
+          name: splunk-config
+---
+# splunk-service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: splunk
+spec:
+  selector:
+    app: splunk-forwarder
+  ports:
+    - protocol: TCP
+      port: 9997
+      targetPort: 9997
+---
