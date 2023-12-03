@@ -49,16 +49,16 @@ metadata:
   name: my-app-ingress
 spec:
   rules:
-  - host: my-app.myorg.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: my-app
-            port:
-              number: 80
+    - host: my-app.myorg.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: my-app
+                port:
+                  number: 80
 
 # prometheus.yaml
 
@@ -76,9 +76,9 @@ spec:
       prometheus: my-org-prometheus
   alerting:
     alertmanagers:
-    - namespace: default
-      name: my-app-alertmanager
-      port: web
+      - namespace: default
+        name: my-app-alertmanager
+        port: web
 ---
 # grafana.yaml
 
@@ -97,10 +97,10 @@ spec:
         app: my-org-grafana
     spec:
       containers:
-      - name: my-org-grafana
-        image: grafana/grafana:latest
-        ports:
-        - containerPort: 3000
+        - name: my-org-grafana
+          image: grafana/grafana:latest
+          ports:
+          - containerPort: 3000
 ---
 # grafana-service.yaml
 
@@ -125,12 +125,12 @@ metadata:
   name: splunk-config
 data:
   outputs.conf: |-
-   # [tcpout]
-    defaultGroup = splunk-indexer
-    indexAndForward = true
+    [tcpout]
+      defaultGroup = splunk-indexer
+      indexAndForward = true
     
-   # [tcpout:splunk-indexer]
-    server = splunk-indexer-host:9997
+    [tcpout:splunk-indexer]
+      server = splunk-indexer-host:9997
 ---
 # splunk-daemonset.yaml
 

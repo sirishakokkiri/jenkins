@@ -13,7 +13,7 @@ replicaCount: 2
 ingress:
   enabled: true
   hosts:
-    - host: My-app.myorg.com
+    - host: my-app.myorg.com
       paths:
         - /
 
