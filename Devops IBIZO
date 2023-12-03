@@ -1,0 +1,79 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = 'My-app'
+        DOCKER_REGISTRY = 'My-docker-registry'
+        K8S_NAMESPACE = 'My-k8s-namespace'
+        HELM_CHART_PATH = 'path/to/My/helm/chart'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                 git branch: 'main', credentialsId: 'My-git-credentials', url = 'https://github.com/sirishakokkiri/jenkins.git'
+                }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    //  build application 
+                    sh 'mvn clean install'
+                }
+            }
+        }
+
+        stage('Unit Test') {
+            steps {
+                script {
+                    //  unit test 
+                    sh 'mvn clean test'
+                }
+            }
+        }
+
+        stage('Integration Test') {
+            steps {
+                script {
+                    //  integration test 
+                    sh 'mvn verify'
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Copy the artifact to the workspace
+                    sh 'cp /path/to/artifact.jar $WORKSPACE'
+
+                    //  Docker build commands 
+                    sh "docker build -t $DOCKER_REGISTRY/$APP_NAME ."
+                    sh "docker push $DOCKER_REGISTRY/$APP_NAME"
+                }
+            }
+        }
+
+        stage('K8s Deployment') {
+            steps {
+                script {
+                    // Assuming Helm is installed on Jenkins agent
+                    sh "helm upgrade --install $APP_NAME $HELM_CHART_PATH --namespace $K8S_NAMESPACE -f values.yaml"
+                }
+            }
+        }
+        
+    post {
+        success {
+            // actions to perform on successful deployment
+            echo 'Deployment successful!'
+
+        }
+        failure {
+            // actions to perform on deployment failure
+            echo 'Deployment failed!'
+            
+        }
+    }    
+}
