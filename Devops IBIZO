@@ -2,45 +2,46 @@ pipeline {
     agent any
 
     environment {
-        APP_NAME = 'My-app'
-        DOCKER_REGISTRY = 'My-docker-registry'
-        K8S_NAMESPACE = 'My-k8s-namespace'
+        APP_NAME = 'my-app'
+        DOCKER_REGISTRY = 'my-docker-registry'
+        K8S_NAMESPACE = 'my-k8s-namespace'
         HELM_CHART_PATH = 'path/to/My/helm/chart'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                 git branch: 'main', credentialsId: 'My-git-credentials', url = 'https://github.com/sirishakokkiri/jenkins.git'
+                 git branch: 'main', credentialsId: 'my-git-credentials', url = 'https://github.com/sirishakokkiri/myapplication.git'
                 }
         }
 
         stage('Build') {
             steps {
                 script {
-                    //  build application 
+                    //  It will test and build application
                     sh 'mvn clean install'
                 }
             }
         }
 
-        stage('Unit Test') {
+        stage('Integration Tests') {
             steps {
                 script {
-                    //  unit test 
-                    sh 'mvn clean test'
+                    //  integration test 
+                    sh 'mvn verify -Pintegration-test'
                 }
             }
         }
 
-        stage('Integration Test') {
+        stage('end-to-end Tests') {
             steps {
                 script {
                     //  integration test 
-                    sh 'mvn verify'
+                    sh 'mvn verify -Pe2e-tests'
                 }
             }
         }
+
 
         stage('Build Docker Image') {
             steps {
@@ -48,18 +49,18 @@ pipeline {
                     // Copy the artifact to the workspace
                     sh 'cp /path/to/artifact.jar $WORKSPACE'
 
-                    //  Docker build commands 
+                    //  Build and Upload Docker image
                     sh "docker build -t $DOCKER_REGISTRY/$APP_NAME ."
                     sh "docker push $DOCKER_REGISTRY/$APP_NAME"
                 }
             }
         }
 
-        stage('K8s Deployment') {
+        stage('K8s Deployment-Env') {
             steps {
                 script {
                     // Assuming Helm is installed on Jenkins agent
-                    sh "helm upgrade --install $APP_NAME $HELM_CHART_PATH --namespace $K8S_NAMESPACE -f values.yaml"
+                    sh "helm upgrade --install $APP_NAME $HELM_CHART_PATH --namespace $K8S_NAMESPACE -f values-qa.yaml"
 
                     //  kubectl to apply the deployment YAML to your Kubernetes cluster
                     sh 'kubectl apply -f deployment.yaml -n $KUBE_NAMESPACE'
