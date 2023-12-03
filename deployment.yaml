@@ -1,0 +1,61 @@
+# deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: My-app
+  labels:
+    app: My-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: My-app
+  template:
+    metadata:
+      labels:
+        app: My-app
+    spec:
+      containers:
+      - name: My-app
+        image: My-docker-registry/My-app:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: production
+        
+---
+# service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: My-app
+spec:
+  selector:
+    app: My-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: ClusterIP  # Change to LoadBalancer or NodePort as needed
+---
+# ingress.yaml
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: My-app-ingress
+spec:
+  rules:
+  - host: My-app.ibizo.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: My-app
+            port:
+              number: 80
