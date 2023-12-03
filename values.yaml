@@ -1,0 +1,29 @@
+# values.yaml
+
+image:
+  repository: My-docker-registry/My-app
+  tag: latest
+
+service:
+  name: My-app
+  port: 8080
+
+replicaCount: 2
+
+ingress:
+  enabled: true
+  hosts:
+    - host: My-app.ibizo.com
+      paths:
+        - /
+
+env:
+  - name: SPRING_PROFILES_ACTIVE
+    value: production
+
+vault:
+  enabled: true
+  path: secret/My-app
+  key: a1b2c33d4e5f6g7h8i9jakblc
+
+
