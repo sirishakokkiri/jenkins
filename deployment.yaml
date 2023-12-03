@@ -3,27 +3,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: My-app
+  name: my-app
   labels:
-    app: My-app
+    app: my-app
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: My-app
+      app: my-app
   template:
     metadata:
       labels:
-        app: My-app
+        app: my-app
     spec:
       containers:
-      - name: My-app
-        image: My-docker-registry/My-app:latest
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SPRING_PROFILES_ACTIVE
-          value: production
+        - name: my-app
+          image: my-docker-registry/my-app:latest
+          ports:
+           - containerPort: 8080
+          env:
+           - name: SPRING_PROFILES_ACTIVE
+             value: qa
         
 ---
 # service.yaml
@@ -31,10 +31,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: My-app
+  name: my-app
 spec:
   selector:
-    app: My-app
+    app: my-app
   ports:
     - protocol: TCP
       port: 80
@@ -46,17 +46,17 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: My-app-ingress
+  name: my-app-ingress
 spec:
   rules:
-  - host: My-app.ibizo.com
+  - host: my-app.myorg.com
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: My-app
+            name: my-app
             port:
               number: 80
 
@@ -65,19 +65,19 @@ spec:
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
-  name: My-org-prometheus
+  name: my-org-prometheus
 spec:
   replicas: 1
   serviceMonitorSelector:
     matchLabels:
-      app: My-app
+      app: my-app
   ruleSelector:
     matchLabels:
-      prometheus: My-org-prometheus
+      prometheus: my-org-prometheus
   alerting:
     alertmanagers:
     - namespace: default
-      name: My-app-alertmanager
+      name: my-app-alertmanager
       port: web
 ---
 # grafana.yaml
@@ -85,7 +85,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: My-org-grafana
+  name: my-org-grafana
 spec:
   replicas: 1
   selector:
@@ -94,7 +94,7 @@ spec:
   template:
     metadata:
       labels:
-        app: My-org-grafana
+        app: my-org-grafana
     spec:
       containers:
       - name: my-org-grafana
@@ -125,11 +125,11 @@ metadata:
   name: splunk-config
 data:
   outputs.conf: |-
-    [tcpout]
+   # [tcpout]
     defaultGroup = splunk-indexer
     indexAndForward = true
     
-    [tcpout:splunk-indexer]
+   # [tcpout:splunk-indexer]
     server = splunk-indexer-host:9997
 ---
 # splunk-daemonset.yaml
@@ -148,15 +148,15 @@ spec:
         app: splunk-forwarder
     spec:
       containers:
-      - name: splunk-forwarder
-        image: splunk/universalforwarder:latest
-        volumeMounts:
-        - name: splunk-config
-          mountPath: /opt/splunkforwarder/etc/system/local
+        - name: splunk-forwarder
+          image: splunk/universalforwarder:latest
+          volumeMounts:
+            - name: splunk-config
+              mountPath: /opt/splunkforwarder/etc/system/local
       volumes:
-      - name: splunk-config
-        configMap:
-          name: splunk-config
+        - name: splunk-config
+          configMap:
+            name: splunk-config
 ---
 # splunk-service.yaml
 
